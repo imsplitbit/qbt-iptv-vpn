@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 # DEFAULTS
 if [[ -z "${VPN_ENABLED}" ]]

@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 QBT_ROOT_DIR=/config/qBittorrent
 QBT_CONF_DEST=$QBT_ROOT_DIR/config/qBittorrent.conf
