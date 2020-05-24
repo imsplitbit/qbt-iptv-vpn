@@ -1,6 +1,6 @@
 # QBittorrent / IPTV-proxy over Openvpn
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer=imsplitbit@gmail.com
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -74,6 +74,6 @@ ADD iptv-proxy/ /etc/iptv-proxy/
 ADD qbittorrent/ /etc/qbittorrent/
 ADD supervisor/ /etc/supervisor/
 
-RUN chmod +x /etc/iptv-proxy/*.sh /etc/openvpn/*.sh /etc/qbittorrent/*.sh /etc/iptables/*.sh
+RUN chmod +x /etc/iptv-proxy/*.sh /etc/openvpn/*.sh /etc/qbittorrent/*.sh /etc/iptables/*.sh /etc/supervisor/*.sh
 
 CMD ["/bin/bash", "/etc/supervisor/start.sh"]

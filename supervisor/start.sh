@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # DEFAULTS
 if [[ -z "${VPN_ENABLED}" ]]
@@ -39,15 +40,31 @@ fi
 
 # User setup
 ## Check for missing group
+if [[ -z "${PGID}" ]]
+then
+    export PGID=100
+fi
+if [[ -z "${PGNAME}" ]]
+then
+    export PGNAME=mediagroup
+fi
 /bin/egrep  -i "^${PGID}:" /etc/passwd
 if [ $? -eq 0 ]; then
    echo "Group $PGID exists"
 else
    echo "Adding $PGID group"
-	 groupadd -g $PGID mediagroup
+	 groupadd -g $PGID $PGNAME
 fi
 
 ## Check for missing userid
+if [[ -z "${PUID}" ]]
+then
+    export PUID=99
+fi
+if [[ -z "${PUNAME}" ]]
+then
+    export PUNAME=mediauser
+fi
 /bin/egrep  -i "^${PUID}:" /etc/passwd
 if [ $? -eq 0 ]; then
    echo "User $PUID exists in /etc/passwd"
@@ -69,20 +86,22 @@ if [[ $VPN_ENABLED = "no" ]] || [[ $VPN_ENABLED = "false" ]]
 then
 	echo "[warn] !!IMPORTANT!! You have set the VPN to disabled, you will NOT be secure!" | ts '%Y-%m-%d %H:%M:%.S'
 else
-    exec /bin/bash /etc/openvpn/start.sh
-    exec /bin/bash /etc/iptables/start.sh
+    /etc/openvpn/start.sh
+    /etc/iptables/start.sh
 fi
 
 if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
 then
     echo "[info] qBittorrent enabled, starting..." | ts '%Y-%m-%d %H:%M:%.S'
-    exec /bin/bash /etc/qbittorrent/start.sh
+    /etc/qbittorrent/start.sh
+    echo "[info] qBittorrent started" | ts '%Y-%m-%d %H:%M:%.S'
 fi
 
 if [[ $IPTV_ENABLED = "yes" ]] || [[ $IPTV_ENABLED = "true" ]]
 then
     echo "[info] iptv-proxy enabled, starting..." | ts '%Y-%m-%d %H:%M:%.S'
-    exec /bin/bash /etc/iptv-proxy/start.sh
+    /etc/iptv-proxy/start.sh
+    echo "[info] iptv-proxy started" | ts '%Y-%m-%d %H:%M:%.S'
 fi
 
 # Begin watch loop
@@ -90,14 +109,16 @@ while true
 do
     sleep 5
 
-    if [[ $VPN_ENABLED ]]
+    if [[ $VPN_ENABLED = "yes" ]] || [[ $VPN_ENABLED = "true" ]]
     then
-        openvpnpid=$(pgrep -o -x openvpnpid)
+        openvpnpid=$(pgrep -o -x openvpn)
         echo "[info] openvpn PID: $openvpnpid" | ts '%Y-%m-%d %H:%M:%.S'
 
-        if [ -e /proc/$openvpnpid ]; then
+        if [ -e /proc/$openvpnpid ]
+        then
             pgrep -o -x openvpn
             if [ $? -gt 0 ]
+            then
                 echo "[error] openvpn died!" | ts '%Y-%m-%d %H:%M:%.S'
                 exit 1
             fi
@@ -107,14 +128,16 @@ do
         fi
     fi
 
-    if [[ $IPTV_ENABLED ]]
+    if [[ $IPTV_ENABLED = "yes" ]] || [[ $IPTV_ENABLED = "true" ]]
     then
         iptvproxypid=$(pgrep -o -x iptv-proxy)
         echo "[info] IPTV-Proxy PID: $iptvproxypid" | ts '%Y-%m-%d %H:%M:%.S'
 
-        if [ -e /proc/$iptvproxypid ]; then
+        if [ -e /proc/$iptvproxypid ]
+        then
             pgrep -o -x iptv-proxy
             if [ $? -gt 0 ]
+            then
                 echo "[error] iptv-proxy died!" | ts '%Y-%m-%d %H:%M:%.S'
                 exit 1
             fi
@@ -124,14 +147,16 @@ do
         fi
     fi
 
-    if [[ $QBT_ENABLED ]]
+    if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
     then
         qbtpid=$(pgrep -o -x qbittorrent-nox)
         echo "[info] qbittorrent PID: $qbtpid" | ts '%Y-%m-%d %H:%M:%.S'
 
-        if [ -e /proc/$qbtpid ]; then
+        if [ -e /proc/$qbtpid ]
+        then
             pgrep -o -x qbittorrent-nox
             if [ $? -gt 0 ]
+            then
                 echo "[error] qbittorrent died!" | ts '%Y-%m-%d %H:%M:%.S'
                 exit 1
             fi

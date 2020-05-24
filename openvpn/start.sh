@@ -151,5 +151,15 @@ fi
 
 echo "[info] Starting OpenVPN..." | ts '%Y-%m-%d %H:%M:%.S'
 pushd /config/openvpn
-exec openvpn --config ${VPN_CONFIG} &
+openvpn --config ${VPN_CONFIG} &
 popd
+
+sleep 1
+openvpnpid=$(pgrep -o -x openvpn)
+echo "[info] openvpn PID: $openvpnpid" | ts '%Y-%m-%d %H:%M:%.S'
+
+if ! [ -e /proc/$openvpnpid ]
+then
+	echo "[error] openvpn failed to start!" | ts '%Y-%m-%d %H:%M:%.S'
+    exit 1
+fi

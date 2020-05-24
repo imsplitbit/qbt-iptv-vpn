@@ -31,10 +31,10 @@ echo "[debug] Proxy command: 'iptv-proxy --xtream-base-url ${XTREAM_BASE_URL} --
 echo "[info] Starting iptv-proxy daemon..." | ts '%Y-%m-%d %H:%M:%.S'
 if [ -z "${PROXY_PATH}" ]
 then
-    su $PUSERNAME -c "iptv-proxy --xtream-base-url ${XTREAM_BASE_URL} --xtream-user ${XTREAM_USERNAME} --xtream-password ${XTREAM_PASSWORD} --port $WEB_PORT --user $PROXY_USER --password $PROXY_PASS --hostname $PROXY_HOST &"
+    su $PUNAME -c "iptv-proxy --xtream-base-url ${XTREAM_BASE_URL} --xtream-user ${XTREAM_USERNAME} --xtream-password ${XTREAM_PASSWORD} --port $WEB_PORT --user $PROXY_USER --password $PROXY_PASS --hostname $PROXY_HOST &"
 else
     echo "[info] Proxy path: ${PROXY_PATH}" | ts '%Y-%m-%d %H:%M:%.S'
-    su $PUSERNAME -c "iptv-proxy --xtream-base-url ${XTREAM_BASE_URL} --xtream-user ${XTREAM_USERNAME} --xtream-password ${XTREAM_PASSWORD} --port $WEB_PORT --user $PROXY_USER --password $PROXY_PASS --hostname $PROXY_HOST --custom-endpoint $PROXY_PATH &"
+    su $PUNAME -c "iptv-proxy --xtream-base-url ${XTREAM_BASE_URL} --xtream-user ${XTREAM_USERNAME} --xtream-password ${XTREAM_PASSWORD} --port $WEB_PORT --user $PROXY_USER --password $PROXY_PASS --hostname $PROXY_HOST --custom-endpoint $PROXY_PATH &"
 fi
 
 sleep 1
