@@ -158,8 +158,10 @@ sleep 1
 openvpnpid=$(pgrep -o -x openvpn)
 echo "[info] openvpn PID: $openvpnpid" | ts '%Y-%m-%d %H:%M:%.S'
 
-if ! [ -e /proc/$openvpnpid ]
+if [ -e /proc/$openvpnpid ]
 then
+	/etc/iptables/start.sh
+else
 	echo "[error] openvpn failed to start!" | ts '%Y-%m-%d %H:%M:%.S'
     exit 1
 fi

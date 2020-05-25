@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # DEFAULTS
+CHECK_INTERVAL=120
+
 if [[ -z "${VPN_ENABLED}" ]]
 then
     VPN_ENABLED=no
@@ -86,7 +88,6 @@ then
 	echo "[warn] !!IMPORTANT!! You have set the VPN to disabled, you will NOT be secure!" | ts '%Y-%m-%d %H:%M:%.S'
 else
     /etc/openvpn/start.sh
-    /etc/iptables/start.sh
 fi
 
 if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
@@ -106,7 +107,7 @@ fi
 # Begin watch loop
 while true
 do
-    sleep 5
+    sleep $CHECK_INTERVAL
 
     if [[ $VPN_ENABLED = "yes" ]] || [[ $VPN_ENABLED = "true" ]]
     then
@@ -115,7 +116,7 @@ do
 
         if [ -e /proc/$openvpnpid ]
         then
-            pgrep -o -x openvpn
+            pgrep -o -x openvpn 2>&1 > /dev/null
             if [ $? -gt 0 ]
             then
                 echo "[error] openvpn died!" | ts '%Y-%m-%d %H:%M:%.S'
@@ -134,7 +135,7 @@ do
 
         if [ -e /proc/$iptvproxypid ]
         then
-            pgrep -o -x iptv-proxy
+            pgrep -o -x iptv-proxy 2>&1 > /dev/null
             if [ $? -gt 0 ]
             then
                 echo "[error] iptv-proxy died!" | ts '%Y-%m-%d %H:%M:%.S'
@@ -153,7 +154,7 @@ do
 
         if [ -e /proc/$qbtpid ]
         then
-            pgrep -o -x qbittorrent-nox
+            pgrep -o -x qbittorrent-nox 2>&1 > /dev/null
             if [ $? -gt 0 ]
             then
                 echo "[error] qbittorrent died!" | ts '%Y-%m-%d %H:%M:%.S'

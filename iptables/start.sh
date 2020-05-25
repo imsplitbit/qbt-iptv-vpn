@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Forked from binhex's OpenVPN dockers
 # Wait until tunnel is up
 while : ; do
@@ -100,13 +101,22 @@ iptables -A INPUT -s "${docker_network_cidr}" -d "${docker_network_cidr}" -j ACC
 iptables -A INPUT -i eth0 -p $VPN_PROTOCOL --sport $VPN_PORT -j ACCEPT
 
 if [[ $IPTV_ENABLED = "yes" ]] || [[ $IPTV_ENABLED = "true" ]]
+then
 	iptables -A INPUT -i eth0 -p tcp --dport ${IPTV_WEB_PORT} -j ACCEPT
 	iptables -A INPUT -i eth0 -p tcp --sport ${IPTV_WEB_PORT} -j ACCEPT
 fi
 
 if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
+then
 	iptables -A INPUT -i eth0 -p tcp --dport ${QBT_WEB_PORT} -j ACCEPT
 	iptables -A INPUT -i eth0 -p tcp --sport ${QBT_WEB_PORT} -j ACCEPT
+	# accept input to qbittorrent daemon port - used for lan access
+	if [[ -z "${QBT_INCOMING_PORT}" ]]
+	then
+		iptables -A INPUT -i eth0 -s "${LAN_NETWORK}" -p tcp --dport 8999 -j ACCEPT
+	else
+		iptables -A INPUT -i eth0 -s "${LAN_NETWORK}" -p tcp --dport ${QBT_INCOMING_PORT} -j ACCEPT
+	fi
 fi
 
 # accept input icmp (ping)
@@ -114,9 +124,6 @@ iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
 # accept input to local loopback
 iptables -A INPUT -i lo -j ACCEPT
-
-# output iptable rules
-###
 
 # set policy to drop ipv4 for output
 iptables -P OUTPUT DROP
@@ -134,14 +141,16 @@ iptables -A OUTPUT -s "${docker_network_cidr}" -d "${docker_network_cidr}" -j AC
 iptables -A OUTPUT -o eth0 -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
 
 # if iptable mangle is available (kernel module) then use mark
-if [[ $iptable_mangle_exit_code == 0 ]]; then
-
+if [[ $iptable_mangle_exit_code == 0 ]]
+then
 	if [[ $IPTV_ENABLED = "yes" ]] || [[ $IPTV_ENABLED = "true" ]]
+	then
 		iptables -t mangle -A OUTPUT -p tcp --dport ${IPTV_WEB_PORT} -j MARK --set-mark 1
 		iptables -t mangle -A OUTPUT -p tcp --sport ${IPTV_WEB_PORT} -j MARK --set-mark 1
 	fi
 
 	if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
+	then
 		iptables -t mangle -A OUTPUT -p tcp --dport ${QBT_WEB_PORT} -j MARK --set-mark 1
 		iptables -t mangle -A OUTPUT -p tcp --sport ${QBT_WEB_PORT} -j MARK --set-mark 1
 	fi
@@ -149,13 +158,22 @@ if [[ $iptable_mangle_exit_code == 0 ]]; then
 fi
 
 if [[ $IPTV_ENABLED = "yes" ]] || [[ $IPTV_ENABLED = "true" ]]
+then
 	iptables -A OUTPUT -o eth0 -p tcp --dport ${IPTV_WEB_PORT} -j ACCEPT
 	iptables -A OUTPUT -o eth0 -p tcp --sport ${IPTV_WEB_PORT} -j ACCEPT
 fi
 
 if [[ $QBT_ENABLED = "yes" ]] || [[ $QBT_ENABLED = "true" ]]
+then
 	iptables -A OUTPUT -o eth0 -p tcp --dport ${QBT_WEB_PORT} -j ACCEPT
 	iptables -A OUTPUT -o eth0 -p tcp --sport ${QBT_WEB_PORT} -j ACCEPT
+	# accept output to qBittorrent daemon port - used for lan access
+	if [ -z "${QBT_INCOMING_PORT}" ]
+	then
+		iptables -A OUTPUT -o eth0 -d "${LAN_NETWORK}" -p tcp --sport 8999 -j ACCEPT
+	else
+		iptables -A OUTPUT -o eth0 -d "${LAN_NETWORK}" -p tcp --sport ${QBT_INCOMING_PORT} -j ACCEPT
+	fi
 fi
 
 # accept output for icmp (ping)
